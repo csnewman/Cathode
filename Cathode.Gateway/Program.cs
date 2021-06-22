@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Cathode.Gateway
 {
@@ -18,6 +13,15 @@ namespace Cathode.Gateway
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+                .ConfigureAppConfiguration(builder =>
+                {
+                    builder.AddEnvironmentVariables(options => { options.Prefix = "CATHODE_"; });
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseKestrel(options => options.AddServerHeader = false);
+                    webBuilder.UseUrls("http://*", "https://*");
+                    webBuilder.UseStartup<Startup>();
+                });
     }
 }

@@ -5,4 +5,9 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Cathode.Common\Cathode.Common.csproj" />
+      <ProjectReference Include="..\Cathode.Gateway.Protocol\Cathode.Gateway.Protocol.csproj" />
+    </ItemGroup>
+
 </Project>
