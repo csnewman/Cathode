@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Cathode.Gateway
@@ -8,7 +10,16 @@ namespace Cathode.Gateway
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            // Apply db migrations
+            using (var scope = host.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<GatewayDb>();
+                db.Database.Migrate();
+            }
+
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -20,7 +31,7 @@ namespace Cathode.Gateway
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseKestrel(options => options.AddServerHeader = false);
-                    webBuilder.UseUrls("http://*", "https://*");
+                    // webBuilder.UseUrls("http://*", "https://*");
                     webBuilder.UseStartup<Startup>();
                 });
     }

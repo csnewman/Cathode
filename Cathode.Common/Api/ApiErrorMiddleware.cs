@@ -67,6 +67,10 @@ namespace Cathode.Common.Api
                                 "notFound",
                                 "The requested content could not be found"
                             ),
+                            StatusCodes.Status415UnsupportedMediaType => new GenericApiErrorResponse(
+                                "unsupportedMediaType",
+                                "The supplied media type is unsupported"
+                            ),
                             StatusCodes.Status500InternalServerError => new GenericApiErrorResponse(
                                 "internalError",
                                 "An internal server error has occured"

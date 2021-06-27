@@ -26,5 +26,11 @@ namespace Cathode.Gateway.Index
             return _indexService.PingAsync(Context.Connection);
         }
 
+        [HttpPost("register")]
+        public Task<ApiResult<IndexRegisterResponse>> RegisterAsync(IndexRegisterRequest request)
+        {
+            return _indexService.RegisterAsync(request);
+        }
+        
     }
 }

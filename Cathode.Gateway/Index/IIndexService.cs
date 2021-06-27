@@ -8,5 +8,7 @@ namespace Cathode.Gateway.Index
     public interface IIndexService
     {
         Task<ApiResult<PingResponse>> PingAsync(ConnectionInfo connection);
+
+        Task<ApiResult<IndexRegisterResponse>> RegisterAsync(IndexRegisterRequest request);
     }
 }

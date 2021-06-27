@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -14,9 +16,18 @@ namespace Cathode.Gateway
 {
     public class Startup
     {
+        private readonly GatewayOptions _options;
+
+        public Startup(IConfiguration configuration)
+        {
+            _options = new GatewayOptions(configuration);
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IIndexService, IndexService>();
+            services.AddDbContext<GatewayDb>(options => { options.UseNpgsql(_options.DatabaseConnectionString); });
+
+            services.AddScoped<IIndexService, IndexService>();
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -36,6 +47,7 @@ namespace Cathode.Gateway
                 .ConfigureApiBehaviorOptions(x =>
                 {
                     x.InvalidModelStateResponseFactory = ApiModelErrorFactory.ConvertError;
+                    x.SuppressMapClientErrors = true;
                 });
 
             services.AddApiVersioning(options =>
