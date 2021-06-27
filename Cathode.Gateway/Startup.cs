@@ -1,4 +1,5 @@
 using Cathode.Common.Api;
+using Cathode.Common.Settings;
 using Cathode.Gateway.Index;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,9 +26,10 @@ namespace Cathode.Gateway
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<GatewayDb>(options => { options.UseNpgsql(_options.DatabaseConnectionString); });
-
-            services.AddScoped<IIndexService, IndexService>();
+            services
+                .AddDbContext<GatewayDb>(options => { options.UseNpgsql(_options.DatabaseConnectionString); })
+                .AddScoped<ISettingsProvider<GatewayDb, GatewaySetting>, SettingsProvider<GatewayDb, GatewaySetting>>()
+                .AddScoped<IIndexService, IndexService>();
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -41,7 +43,7 @@ namespace Cathode.Gateway
                     options.SerializerSettings.Formatting = Formatting.Indented;
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Include;
-                    options.SerializerSettings.Converters.Add((new StringEnumConverter(new CamelCaseNamingStrategy())));
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
                     options.SerializerSettings.ContractResolver = ApiContractResolver.Instance;
                 })
                 .ConfigureApiBehaviorOptions(x =>

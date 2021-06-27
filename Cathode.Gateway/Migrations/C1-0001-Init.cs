@@ -1,4 +1,5 @@
 ﻿using System;
+using Cathode.Gateway;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -22,6 +23,18 @@ namespace Cathode.Gateway.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_nodes", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "settings",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "text", nullable: false),
+                    value = table.Column<GatewaySetting>(type: "jsonb", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_settings", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -68,6 +81,9 @@ namespace Cathode.Gateway.Migrations
         {
             migrationBuilder.DropTable(
                 name: "node_connection_information");
+
+            migrationBuilder.DropTable(
+                name: "settings");
 
             migrationBuilder.DropTable(
                 name: "nodes");

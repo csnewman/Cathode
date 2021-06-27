@@ -1,4 +1,5 @@
 using Cathode.Common.Database;
+using Cathode.Common.Settings;
 using Cathode.Gateway.Index;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +7,16 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Cathode.Gateway
 {
-    public class GatewayDb : DbContext
+    public class GatewayDb : DbContext, ISettingsDbProvider<GatewaySetting>
     {
         public DbSet<Node> Nodes { get; set; }
+
+        public DbSet<SettingsEntry<GatewaySetting>> Settings { get; set; }
+
+        static GatewayDb()
+        {
+            DatabaseUtils.ConfigureJson();
+        }
 
         public GatewayDb([NotNull] DbContextOptions options) : base(options)
         {
@@ -40,6 +48,8 @@ namespace Cathode.Gateway
                 b.HasIndex(x => new { x.NodeId, x.Address })
                     .IsUnique();
             });
+
+            SettingsEntry<GatewaySetting>.OnModelCreating(mb);
         }
     }
 }

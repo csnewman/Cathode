@@ -21,6 +21,23 @@ namespace Cathode.Gateway.Migrations
                 .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+            modelBuilder.Entity("Cathode.Common.Settings.SettingsEntry<Cathode.Gateway.GatewaySetting>", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text")
+                        .HasColumnName("id");
+
+                    b.Property<GatewaySetting>("Value")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_settings");
+
+                    b.ToTable("settings");
+                });
+
             modelBuilder.Entity("Cathode.Gateway.Index.Node", b =>
                 {
                     b.Property<int>("Id")
