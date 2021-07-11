@@ -1,6 +1,8 @@
 using Cathode.Common.Api;
 using Cathode.Common.Settings;
+using Cathode.Gateway.Authentication;
 using Cathode.Gateway.Index;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -9,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -29,7 +33,18 @@ namespace Cathode.Gateway
             services
                 .AddDbContext<GatewayDb>(options => { options.UseNpgsql(_options.DatabaseConnectionString); })
                 .AddScoped<ISettingsProvider<GatewayDb, GatewaySetting>, SettingsProvider<GatewayDb, GatewaySetting>>()
+                .AddScoped<IAuthenticationService, AuthenticationService>()
                 .AddScoped<IIndexService, IndexService>();
+
+            services
+                .AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJwtOptions>()
+                .AddAuthorization()
+                .AddAuthentication(x =>
+                {
+                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer();
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -74,6 +89,9 @@ namespace Cathode.Gateway
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
