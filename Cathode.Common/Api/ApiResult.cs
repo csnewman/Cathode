@@ -4,9 +4,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Cathode.Common.Api
 {
-    public class ApiResult<T> : JsonResult where T : ApiResponse, new()
+    public class ApiResult<T> : JsonResult where T : new()
     {
-        public ApiResult(int statusCode, T value) : base(value)
+        public ApiResult(int statusCode, T value) : base(new ApiResponse<T>
+        {
+            Success = true,
+            Data = value
+        })
+        {
+            StatusCode = statusCode;
+        }
+
+        public ApiResult(int statusCode, ApiError error) : base(new ApiResponse<T>
+        {
+            Success = false,
+            Error = error
+        })
         {
             StatusCode = statusCode;
         }
@@ -14,31 +27,25 @@ namespace Cathode.Common.Api
 
     public static class ApiResultHelper
     {
-        public static ApiResult<T> Success<T>(T obj) where T : ApiResponse, new()
+        public static ApiResult<T> Success<T>(T obj) where T : new()
         {
-            obj.Success = true;
             return new ApiResult<T>(StatusCodes.Status200OK, obj);
         }
 
-        public static ApiResult<T> BadRequest<T>(T obj) where T : ApiResponse, new()
+        public static ApiResult<T> BadRequest<T>(ApiError? error = null) where T : new()
         {
-            obj.Success = false;
-            return new ApiResult<T>(StatusCodes.Status400BadRequest, obj);
+            return new ApiResult<T>(
+                StatusCodes.Status400BadRequest,
+                error ?? new ApiError(ApiErrorCode.BadRequest, "Bad request")
+            );
         }
 
-        public static ApiResult<T> Forbidden<T>(T obj) where T : ApiResponse, new()
+        public static ApiResult<T> Forbidden<T>(ApiError? error = null) where T : new()
         {
-            obj.Success = false;
-            return new ApiResult<T>(StatusCodes.Status403Forbidden, obj);
-        }
-
-        public static ApiResult<T> NotFound<T>() where T : ApiResponse, new()
-        {
-            return new ApiResult<T>(StatusCodes.Status404NotFound, new T
-            {
-                Success = false,
-                ErrorMessage = "Content not found"
-            });
+            return new ApiResult<T>(
+                StatusCodes.Status403Forbidden,
+                error ?? new ApiError(ApiErrorCode.Forbidden, "Authentication failed")
+            );
         }
     }
 }

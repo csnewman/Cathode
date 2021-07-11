@@ -47,36 +47,36 @@ namespace Cathode.Common.Api
 
                 await SendResponseAsync(
                     context,
-                    new ApiResult<GenericApiErrorResponse>(
+                    new ApiResult<object>(
                         context.Response.StatusCode,
                         context.Response.StatusCode switch
                         {
-                            StatusCodes.Status400BadRequest => new GenericApiErrorResponse(
-                                "badRequest",
+                            StatusCodes.Status400BadRequest => new ApiError(
+                                ApiErrorCode.BadRequest,
                                 "Bad request"
                             ),
-                            StatusCodes.Status401Unauthorized => new GenericApiErrorResponse(
-                                "unauthorised",
+                            StatusCodes.Status401Unauthorized => new ApiError(
+                                ApiErrorCode.Unauthorised,
                                 "Authentication failed"
                             ),
-                            StatusCodes.Status403Forbidden => new GenericApiErrorResponse(
-                                "forbidden",
+                            StatusCodes.Status403Forbidden => new ApiError(
+                                ApiErrorCode.Forbidden,
                                 "Authentication failed"
                             ),
-                            StatusCodes.Status404NotFound => new GenericApiErrorResponse(
-                                "notFound",
+                            StatusCodes.Status404NotFound => new ApiError(
+                                ApiErrorCode.NotFound,
                                 "The requested content could not be found"
                             ),
-                            StatusCodes.Status415UnsupportedMediaType => new GenericApiErrorResponse(
-                                "unsupportedMediaType",
+                            StatusCodes.Status415UnsupportedMediaType => new ApiError(
+                                ApiErrorCode.UnsupportedMediaType,
                                 "The supplied media type is unsupported"
                             ),
-                            StatusCodes.Status500InternalServerError => new GenericApiErrorResponse(
-                                "internalError",
+                            StatusCodes.Status500InternalServerError => new ApiError(
+                                ApiErrorCode.InternalError,
                                 "An internal server error has occured"
                             ),
-                            _ => new GenericApiErrorResponse(
-                                "unknown",
+                            _ => new ApiError(
+                                ApiErrorCode.Unknown,
                                 $"Unknown response {context.Response.StatusCode}"
                             )
                         }
@@ -97,15 +97,15 @@ namespace Cathode.Common.Api
                     // Prevent data from leaking, such as set headers
                     context.Response.Clear();
 
-                    var environment = context.RequestServices.GetService<IWebHostEnvironment>();
-                    await SendResponseAsync(context, new ApiResult<GenericApiErrorResponse>(
+                    var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+                    await SendResponseAsync(context, new ApiResult<object>(
                             StatusCodes.Status404NotFound,
-                            new GenericApiErrorResponse
+                            new ApiError
                             {
-                                Success = false,
-                                ErrorCode = "internalError",
-                                ErrorMessage = "An internal server error has occured",
-                                ErrorDetails = environment?.IsDevelopment() == true ? ex.Message : null
+                                Code = ApiErrorCode.InternalError,
+                                Message = environment.IsDevelopment()
+                                    ? ex.Message
+                                    : "An internal server error has occured"
                             }
                         )
                     );
@@ -123,7 +123,7 @@ namespace Cathode.Common.Api
         {
             context.Response.OnStarting(ClearCacheHeaders, context.Response);
 
-            var executor = context.RequestServices.GetService<IActionResultExecutor<JsonResult>>();
+            var executor = context.RequestServices.GetRequiredService<IActionResultExecutor<JsonResult>>();
             return executor.ExecuteAsync(new ActionContext(context, new RouteData(), new ActionDescriptor()), result);
         }
 

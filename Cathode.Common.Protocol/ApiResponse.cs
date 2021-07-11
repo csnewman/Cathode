@@ -1,9 +1,11 @@
 namespace Cathode.Common.Protocol
 {
-    public class ApiResponse
+    public class ApiResponse<T> where T : new()
     {
         public bool Success { get; set; }
 
-        public string? ErrorMessage { get; set; }
+        public ApiError? Error { get; set; }
+
+        public T? Data { get; set; }
     }
 }
