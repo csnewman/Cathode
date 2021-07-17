@@ -2,7 +2,6 @@ using Cathode.Common.Api;
 using Cathode.Common.Settings;
 using Cathode.Gateway.Authentication;
 using Cathode.Gateway.Index;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -11,8 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -37,14 +34,16 @@ namespace Cathode.Gateway
                 .AddScoped<IIndexService, IndexService>();
 
             services
-                .AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJwtOptions>()
                 .AddAuthorization()
                 .AddAuthentication(x =>
                 {
-                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultAuthenticateScheme = CathodeAuthenticationHandler.AuthenticationScheme;
+                    x.DefaultChallengeScheme = CathodeAuthenticationHandler.AuthenticationScheme;
                 })
-                .AddJwtBearer();
+                .AddScheme<CathodeAuthenticationOptions, CathodeAuthenticationHandler>(
+                    CathodeAuthenticationHandler.AuthenticationScheme,
+                    _ => { }
+                );
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
