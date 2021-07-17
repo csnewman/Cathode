@@ -51,30 +51,12 @@ namespace Cathode.Common.Api
                         context.Response.StatusCode,
                         context.Response.StatusCode switch
                         {
-                            StatusCodes.Status400BadRequest => new ApiError(
-                                ApiErrorCode.BadRequest,
-                                "Bad request"
-                            ),
-                            StatusCodes.Status401Unauthorized => new ApiError(
-                                ApiErrorCode.Unauthorised,
-                                "Authentication failed"
-                            ),
-                            StatusCodes.Status403Forbidden => new ApiError(
-                                ApiErrorCode.Forbidden,
-                                "Authentication failed"
-                            ),
-                            StatusCodes.Status404NotFound => new ApiError(
-                                ApiErrorCode.NotFound,
-                                "The requested content could not be found"
-                            ),
-                            StatusCodes.Status415UnsupportedMediaType => new ApiError(
-                                ApiErrorCode.UnsupportedMediaType,
-                                "The supplied media type is unsupported"
-                            ),
-                            StatusCodes.Status500InternalServerError => new ApiError(
-                                ApiErrorCode.InternalError,
-                                "An internal server error has occured"
-                            ),
+                            StatusCodes.Status400BadRequest => new ApiError(ApiErrorCode.BadRequest),
+                            StatusCodes.Status401Unauthorized => new ApiError(ApiErrorCode.Unauthorised),
+                            StatusCodes.Status403Forbidden => new ApiError(ApiErrorCode.Forbidden),
+                            StatusCodes.Status404NotFound => new ApiError(ApiErrorCode.NotFound),
+                            StatusCodes.Status415UnsupportedMediaType => new ApiError(ApiErrorCode.UnsupportedMediaType),
+                            StatusCodes.Status500InternalServerError => new ApiError(ApiErrorCode.InternalError),
                             _ => new ApiError(
                                 ApiErrorCode.Unknown,
                                 $"Unknown response {context.Response.StatusCode}"

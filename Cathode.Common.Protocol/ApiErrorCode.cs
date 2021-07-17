@@ -13,6 +13,7 @@ namespace Cathode.Common.Protocol
         NotFound,
         UnsupportedMediaType,
         AlreadyInUse,
+        NotConfigured,
         AlreadyActivated
     }
 }

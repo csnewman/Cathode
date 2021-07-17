@@ -36,7 +36,7 @@ namespace Cathode.Common.Api
         {
             return new ApiResult<T>(
                 StatusCodes.Status400BadRequest,
-                error ?? new ApiError(ApiErrorCode.BadRequest, "Bad request")
+                error ?? new ApiError(ApiErrorCode.BadRequest)
             );
         }
 
@@ -44,7 +44,7 @@ namespace Cathode.Common.Api
         {
             return new ApiResult<T>(
                 StatusCodes.Status403Forbidden,
-                error ?? new ApiError(ApiErrorCode.Forbidden, "Authentication failed")
+                error ?? new ApiError(ApiErrorCode.Forbidden)
             );
         }
     }
