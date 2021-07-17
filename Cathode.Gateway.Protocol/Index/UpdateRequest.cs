@@ -8,12 +8,5 @@ namespace Cathode.Gateway.Protocol.Index
 
         [MinLength(1)]
         public ConnectionInformation[] ConnectionInfo { get; set; }
-
-        public class ConnectionInformation
-        {
-            public string Address { get; set; }
-
-            public int Priority { get; set; }
-        }
     }
 }

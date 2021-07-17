@@ -13,5 +13,7 @@ namespace Cathode.Gateway.Index
         Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest request);
 
         Task<ApiResult<UpdateResponse>> UpdateAsync(UpdateRequest request, NodeAuthEntity entity);
+
+        Task<ApiResult<LookupResponse>> LookupAsync(LookupRequest request);
     }
 }

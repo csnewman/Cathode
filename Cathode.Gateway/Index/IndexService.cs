@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Cathode.Common.Api;
@@ -128,7 +127,7 @@ namespace Cathode.Gateway.Index
 
             if (request.ControlToken != null)
             {
-                node.ControlToken = request.ControlToken;   
+                node.ControlToken = request.ControlToken;
             }
 
             node.LastSeen = now;
@@ -136,6 +135,37 @@ namespace Cathode.Gateway.Index
             await _db.SaveChangesAsync();
 
             return ApiResultHelper.Success(new UpdateResponse());
+        }
+
+        public async Task<ApiResult<LookupResponse>> LookupAsync(LookupRequest request)
+        {
+            var nodes = await _db.Nodes
+                .Include(x => x.ConnectionInfo)
+                .Where(n =>
+                    n.AccountId == request.AccountId && n.LookupToken == request.LookupToken
+                )
+                .ToListAsync();
+
+            var devices = nodes
+                .Where(n => n.IsConfigured())
+                .Select(n => new LookupResponse.DeviceInformation
+                {
+                    RegistrationId = n.Id,
+                    DeviceId = n.DeviceId,
+                    ControlChallenge = n.ControlTokenChallenge,
+                    FirstSeen = n.FirstSeen,
+                    LastSeen = n.LastSeen,
+                    ConnectionInfo = n.ConnectionInfo.Select(ci => new ConnectionInformation
+                    {
+                        Address = ci.Address,
+                        Priority = ci.Priority
+                    }).ToArray()
+                });
+
+            return ApiResultHelper.Success(new LookupResponse
+            {
+                Devices = devices.ToArray()
+            });
         }
     }
 }

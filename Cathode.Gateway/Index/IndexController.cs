@@ -44,5 +44,11 @@ namespace Cathode.Gateway.Index
                 _ => Task.FromResult(ApiResultHelper.Forbidden<UpdateResponse>()),
             };
         }
+
+        [HttpGet("lookup")]
+        public Task<ApiResult<LookupResponse>> LookupAsync(LookupRequest request)
+        {
+            return _indexService.LookupAsync(request);
+        }
     }
 }
