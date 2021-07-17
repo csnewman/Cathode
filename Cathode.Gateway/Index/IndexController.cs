@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Cathode.Common.Api;
+using Cathode.Gateway.Authentication;
 using Cathode.Gateway.Protocol.Index;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +14,7 @@ namespace Cathode.Gateway.Index
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IIndexService _indexService;
 
-        private HttpContext Context => _contextAccessor.HttpContext;
+        private HttpContext Context => _contextAccessor.HttpContext!;
 
         public IndexController(IHttpContextAccessor contextAccessor, IIndexService indexService)
         {
@@ -27,10 +29,20 @@ namespace Cathode.Gateway.Index
         }
 
         [HttpPost("register")]
-        public Task<ApiResult<IndexRegisterResponse>> RegisterAsync(IndexRegisterRequest request)
+        public Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest request)
         {
             return _indexService.RegisterAsync(request);
         }
-        
+
+        [Authorize]
+        [HttpPost("update")]
+        public Task<ApiResult<UpdateResponse>> UpdateAsync(UpdateRequest request)
+        {
+            return IAuthEntity.Parse(Context.User) switch
+            {
+                NodeAuthEntity e => _indexService.UpdateAsync(request, e),
+                _ => Task.FromResult(ApiResultHelper.Forbidden<UpdateResponse>()),
+            };
+        }
     }
 }

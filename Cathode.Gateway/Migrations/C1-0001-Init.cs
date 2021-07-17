@@ -1,7 +1,6 @@
 ﻿using System;
 using Cathode.Gateway;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Cathode.Gateway.Migrations
 {
@@ -13,10 +12,13 @@ namespace Cathode.Gateway.Migrations
                 name: "nodes",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
                     account_id = table.Column<string>(type: "text", nullable: false),
-                    device_id = table.Column<string>(type: "text", nullable: false),
+                    device_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    lookup_token = table.Column<string>(type: "text", nullable: false),
+                    authentication_token = table.Column<string>(type: "text", nullable: false),
+                    control_token_challenge = table.Column<Guid>(type: "uuid", nullable: false),
+                    control_token = table.Column<string>(type: "text", nullable: true),
                     first_seen = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     last_seen = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
@@ -41,12 +43,10 @@ namespace Cathode.Gateway.Migrations
                 name: "node_connection_information",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    node_id = table.Column<int>(type: "integer", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    node_id = table.Column<Guid>(type: "uuid", nullable: false),
                     address = table.Column<string>(type: "text", nullable: false),
-                    priority = table.Column<int>(type: "integer", nullable: false),
-                    last_seen = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    priority = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

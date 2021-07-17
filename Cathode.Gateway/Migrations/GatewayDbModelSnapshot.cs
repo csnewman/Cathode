@@ -38,20 +38,31 @@ namespace Cathode.Gateway.Migrations
 
             modelBuilder.Entity("Cathode.Gateway.Index.Node", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AccountId")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("account_id");
 
-                    b.Property<string>("DeviceId")
+                    b.Property<string>("AuthenticationToken")
                         .IsRequired()
                         .HasColumnType("text")
+                        .HasColumnName("authentication_token");
+
+                    b.Property<string>("ControlToken")
+                        .HasColumnType("text")
+                        .HasColumnName("control_token");
+
+                    b.Property<Guid>("ControlTokenChallenge")
+                        .HasColumnType("uuid")
+                        .HasColumnName("control_token_challenge");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid")
                         .HasColumnName("device_id");
 
                     b.Property<DateTime>("FirstSeen")
@@ -61,6 +72,11 @@ namespace Cathode.Gateway.Migrations
                     b.Property<DateTime>("LastSeen")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("last_seen");
+
+                    b.Property<string>("LookupToken")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("lookup_token");
 
                     b.HasKey("Id")
                         .HasName("pk_nodes");
@@ -77,23 +93,18 @@ namespace Cathode.Gateway.Migrations
 
             modelBuilder.Entity("Cathode.Gateway.Index.NodeConnectionInformation", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("address");
 
-                    b.Property<DateTime>("LastSeen")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("last_seen");
-
-                    b.Property<int>("NodeId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid")
                         .HasColumnName("node_id");
 
                     b.Property<int>("Priority")

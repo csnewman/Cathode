@@ -2,11 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Cathode.Gateway.Protocol.Index
 {
-    public class IndexRegisterRequest
+    public class UpdateRequest
     {
-        public string AccountId { get; set; }
-
-        public string DeviceId { get; set; }
+        public string? ControlToken { get; set; }
 
         [MinLength(1)]
         public ConnectionInformation[] ConnectionInfo { get; set; }
