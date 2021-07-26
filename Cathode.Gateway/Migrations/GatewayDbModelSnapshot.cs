@@ -48,6 +48,10 @@ namespace Cathode.Gateway.Migrations
                         .HasColumnType("text")
                         .HasColumnName("account_id");
 
+                    b.Property<string>("AcmeChallenge")
+                        .HasColumnType("text")
+                        .HasColumnName("acme_challenge");
+
                     b.Property<string>("AuthenticationToken")
                         .IsRequired()
                         .HasColumnType("text")

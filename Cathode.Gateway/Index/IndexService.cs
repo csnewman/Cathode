@@ -130,6 +130,7 @@ namespace Cathode.Gateway.Index
                 node.ControlToken = request.ControlToken;
             }
 
+            node.AcmeChallenge = request.AcmeChallenge;
             node.LastSeen = now;
 
             await _db.SaveChangesAsync();

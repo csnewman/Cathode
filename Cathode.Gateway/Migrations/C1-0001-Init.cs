@@ -19,6 +19,7 @@ namespace Cathode.Gateway.Migrations
                     authentication_token = table.Column<string>(type: "text", nullable: false),
                     control_token_challenge = table.Column<Guid>(type: "uuid", nullable: false),
                     control_token = table.Column<string>(type: "text", nullable: true),
+                    acme_challenge = table.Column<string>(type: "text", nullable: true),
                     first_seen = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     last_seen = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },

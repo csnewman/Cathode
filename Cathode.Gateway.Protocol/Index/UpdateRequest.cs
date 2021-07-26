@@ -6,6 +6,8 @@ namespace Cathode.Gateway.Protocol.Index
     {
         public string? ControlToken { get; set; }
 
+        public string? AcmeChallenge { get; set; }
+
         [MinLength(1)]
         public ConnectionInformation[] ConnectionInfo { get; set; }
     }

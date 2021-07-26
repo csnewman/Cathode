@@ -19,6 +19,8 @@ namespace Cathode.Gateway.Index
 
         public string? ControlToken { get; set; }
 
+        public string? AcmeChallenge { get; set; }
+
         public DateTime FirstSeen { get; set; }
 
         public DateTime LastSeen { get; set; }
