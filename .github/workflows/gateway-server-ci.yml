@@ -1,0 +1,68 @@
+name: Gateway Server CI
+on:
+  push:
+    paths:
+    - 'Cathode.Common/**'
+    - 'Cathode.Common.Protocol/**'
+    - 'Cathode.Gateway/**'
+    - 'Cathode.Gateway.Client/**'
+    - 'Cathode.Gateway.Protocol/**'
+    - '.github/workflows/gateway-server-ci.yml'
+  pull_request:
+    paths:
+    - 'Cathode.Common/**'
+    - 'Cathode.Common.Protocol/**'
+    - 'Cathode.Gateway/**'
+    - 'Cathode.Gateway.Client/**'
+    - 'Cathode.Gateway.Protocol/**'
+    - '.github/workflows/gateway-server-ci.yml'
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Install rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Install cargo-make
+      uses: davidB/rust-cargo-make@v1
+
+    - name: Install .NET 5.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
+
+    - name: Login to GHCR
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ghcr.io/csnewman/cathode/gateway-server
+
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Run ci task
+      run: cargo make gateway-ci
+
+    - name: Publish to GHCR
+      uses: docker/build-push-action@v2
+      with:
+        context: ./Cathode.Gateway
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}

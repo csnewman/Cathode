@@ -1,0 +1,23 @@
+[config]
+skip_core_tasks = true
+default_to_workspace = false
+
+[tasks.default]
+clear = true
+disabled = true
+
+[tasks.gateway-restore]
+cwd = "Cathode.Gateway"
+command = "dotnet"
+args = ["restore"]
+
+[tasks.gateway-build]
+cwd = "Cathode.Gateway"
+command = "dotnet"
+args = ["publish", "--configuration", "Release", "--no-restore"]
+dependencies = ["gateway-restore"]
+
+[tasks.gateway-ci]
+dependencies = [
+    "gateway-build"
+]
