@@ -49,7 +49,8 @@ namespace Cathode.Gateway
                 services
                     .AddSingleton<IAcmeManager, AcmeManager>()
                     .AddScoped<IAcmeProcessor, AcmeProcessor>()
-                    .AddHostedService<AcmeService>();
+                    .AddHostedService<AcmeService>()
+                    .AddTransient<AcmeMiddleware>();
             }
 
             services
