@@ -21,8 +21,9 @@ namespace Cathode.Gateway.Certificates
 
         public void PruneCertificates()
         {
-            foreach (var entry in _certs.Where(entry => entry.Value.NotAfter >= DateTime.Now))
+            foreach (var entry in _certs.Where(entry => entry.Value.NotAfter < DateTime.Now))
             {
+                _logger.LogInformation("Removing invalid certificate for {}", entry.Key);
                 _certs.TryRemove(entry);
             }
         }

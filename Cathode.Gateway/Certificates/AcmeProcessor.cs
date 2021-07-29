@@ -40,9 +40,23 @@ namespace Cathode.Gateway.Certificates
             Debug.Assert(_options.AcmeDomain != null, "_options.AcmeDomain != null");
             var cert = _certStore.GetCertificate(_options.AcmeDomain);
 
-            if (!IsCertificateValid(cert))
+            if (cert == null)
             {
+                _logger.LogInformation("No existing certificate");
                 await RenewCertificateAsync();
+                return;
+            }
+
+            var left = (cert.NotAfter - DateTime.Now).TotalDays;
+
+            if (left < 30)
+            {
+                _logger.LogInformation("Certificate has less than 30 days remaining");
+                await RenewCertificateAsync();
+            }
+            else
+            {
+                _logger.LogInformation("Certificate has more than 30 days remaining");
             }
         }
 
@@ -59,7 +73,7 @@ namespace Cathode.Gateway.Certificates
             }
 
             var cert = new X509Certificate2(settings.Certificate);
-            if (IsCertificateValid(cert))
+            if (cert.NotAfter > DateTime.Now)
             {
                 _logger.LogInformation("Loaded ACME certificate");
                 _certStore.AddCertificate(cert);
@@ -68,11 +82,6 @@ namespace Cathode.Gateway.Certificates
             {
                 _logger.LogInformation("Existing ACME certificate invalid. Ignoring");
             }
-        }
-
-        private static bool IsCertificateValid(X509Certificate2? cert)
-        {
-            return cert != null && (cert.NotAfter - DateTime.Now).TotalDays >= 30;
         }
 
         private async Task RenewCertificateAsync(bool reuseAccount = true)
