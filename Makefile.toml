@@ -17,7 +17,18 @@ command = "dotnet"
 args = ["publish", "--configuration", "Release", "--no-restore"]
 dependencies = ["gateway-restore"]
 
+[tasks.gateway-dns-build]
+cwd = "gateway-dns"
+command = "cargo"
+args = ["build", "--release"]
+env = { "CARGO_TARGET_DIR" = "target" }
+
 [tasks.gateway-ci]
 dependencies = [
     "gateway-build"
+]
+
+[tasks.gateway-dns-ci]
+dependencies = [
+    "gateway-dns-build"
 ]

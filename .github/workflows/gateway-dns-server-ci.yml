@@ -1,0 +1,55 @@
+name: Gateway DNS Server CI
+on:
+  push:
+    paths:
+    - 'gateway-dns/**'
+    - '.github/workflows/gateway-dns-server-ci.yml'
+  pull_request:
+    paths:
+    - 'gateway-dns/**'
+    - '.github/workflows/gateway-dns-server-ci.yml'
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Install rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Install cargo-make
+      uses: davidB/rust-cargo-make@v1
+
+    - name: Login to GHCR
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ghcr.io/csnewman/cathode/gateway-dns-server
+
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Run ci task
+      run: cargo make gateway-dns-ci
+
+    - name: Publish to GHCR
+      uses: docker/build-push-action@v2
+      with:
+        context: ./gateway-dns
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
