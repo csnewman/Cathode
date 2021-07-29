@@ -1,11 +1,12 @@
 using System;
+using Cathode.Gateway.Certificates;
 using JsonSubTypes;
 using Newtonsoft.Json;
 
 namespace Cathode.Gateway
 {
     [JsonConverter(typeof(JsonSubtypes), "type")]
-    public abstract class GatewaySetting
+    [JsonSubtypes.KnownSubType(typeof(AcmeSettings), AcmeSettings.Id)]
     public abstract class GatewaySetting : ICloneable
     {
         public abstract string Type { get; }

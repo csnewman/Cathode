@@ -1,3 +1,4 @@
+using Cathode.Gateway.Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -30,8 +31,17 @@ namespace Cathode.Gateway
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseKestrel(options => options.AddServerHeader = false);
-                    // webBuilder.UseUrls("http://*", "https://*");
+                    webBuilder.UseKestrel(options =>
+                    {
+                        var resolver = options.ApplicationServices.GetRequiredService<ICertificateStore>();
+                        options.ConfigureHttpsDefaults(opt =>
+                        {
+                            opt.ServerCertificateSelector = resolver.SelectCertificate;
+                        });
+
+                        options.AddServerHeader = false;
+                    });
+                    webBuilder.UseUrls("http://*", "https://*");
                     webBuilder.UseStartup<Startup>();
                 });
     }

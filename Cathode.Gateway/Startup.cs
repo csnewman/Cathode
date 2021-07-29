@@ -1,6 +1,7 @@
 using Cathode.Common.Api;
 using Cathode.Common.Settings;
 using Cathode.Gateway.Authentication;
+using Cathode.Gateway.Certificates;
 using Cathode.Gateway.Index;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,19 +20,37 @@ namespace Cathode.Gateway
     public class Startup
     {
         private readonly GatewayOptions _options;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
         {
+            _hostingEnvironment = hostingEnvironment;
             _options = new GatewayOptions(configuration);
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton(_options);
+
             services
                 .AddDbContext<GatewayDb>(options => { options.UseNpgsql(_options.DatabaseConnectionString); })
                 .AddScoped<ISettingsProvider<GatewayDb, GatewaySetting>, SettingsProvider<GatewayDb, GatewaySetting>>()
                 .AddScoped<IAuthenticationService, AuthenticationService>()
                 .AddScoped<IIndexService, IndexService>();
+
+            services.AddSingleton<ICertificateStore, CertificateStore>();
+
+            if (_hostingEnvironment.IsDevelopment())
+            {
+                services.AddHostedService<DevelopmentCertificateService>();
+            }
+            else if (_options.AcmeEnabled)
+            {
+                services
+                    .AddSingleton<IAcmeManager, AcmeManager>()
+                    .AddScoped<IAcmeProcessor, AcmeProcessor>()
+                    .AddHostedService<AcmeService>();
+            }
 
             services
                 .AddAuthorization()
@@ -83,6 +102,11 @@ namespace Cathode.Gateway
             app.UseMiddleware<ApiErrorMiddleware>();
 
             app.UseForwardedHeaders();
+
+            if (_options.AcmeEnabled)
+            {
+                app.Map(AcmeMiddleware.BasePath, mapped => mapped.UseMiddleware<AcmeMiddleware>());
+            }
 
             if (!env.IsDevelopment()) app.UseHsts();
             app.UseHttpsRedirection();
