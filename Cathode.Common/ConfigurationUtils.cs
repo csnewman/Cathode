@@ -8,6 +8,13 @@ namespace Cathode.Common
     {
         public static string? ParseString(this IConfiguration configuration, string? defaultValue, params string[] key)
         {
+            var globalKey = string.Join("_", key.Select(x => x.ToUpper()));
+            var globalValue = configuration[globalKey];
+            if (globalValue != null)
+            {
+                return globalValue;
+            }
+
             IConfigurationSection? section = null;
             for (var i = 0; i < key.Length; i++)
             {
@@ -31,8 +38,7 @@ namespace Cathode.Common
                 }
             }
 
-            var globalKey = string.Join("_", key.Select(x => x.ToUpper()));
-            return configuration[globalKey] ?? defaultValue;
+            return defaultValue;
         }
 
         public static bool ParseBool(this IConfiguration configuration, bool defaultValue, params string[] key)
