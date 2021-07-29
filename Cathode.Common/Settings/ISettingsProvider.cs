@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cathode.Common.Settings
 {
-    public interface ISettingsProvider<TDatabase, in TSetting> where TDatabase : DbContext, ISettingsDbProvider<TSetting>
+    public interface ISettingsProvider<TDatabase, in TSetting>
+        where TDatabase : DbContext, ISettingsDbProvider<TSetting> where TSetting : ICloneable
     {
         Task<T?> GetAsync<T>(string id) where T : TSetting;
 

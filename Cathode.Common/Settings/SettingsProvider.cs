@@ -6,6 +6,7 @@ namespace Cathode.Common.Settings
 {
     public class SettingsProvider<TDatabase, TSetting> : ISettingsProvider<TDatabase, TSetting>
         where TDatabase : DbContext, ISettingsDbProvider<TSetting>
+        where TSetting : ICloneable
     {
         private readonly TDatabase _db;
 

@@ -1,9 +1,11 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Cathode.Common.Settings
 {
-    public class SettingsEntry<T>
+    public class SettingsEntry<T> where T : ICloneable
     {
         public string Id { get; set; }
 
@@ -17,6 +19,14 @@ namespace Cathode.Common.Settings
                 builder
                     .ToTable("settings")
                     .HasKey(x => x.Id);
+
+                builder.Property(x => x.Value)
+                    .Metadata
+                    .SetValueComparer(new ValueComparer<T>(
+                        (a, b) => a.Equals(b),
+                        a => a.GetHashCode(),
+                        a => (T)a.Clone()
+                    ));
             });
         }
     }
