@@ -28,11 +28,14 @@ namespace Cathode.Gateway.Certificates
 
             if (!_acmeManager.TryGetChallenge(token, out var response))
             {
-                await next(context);
-                return;
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                response = "Invalid token";
+                _logger.LogInformation("Invalid ACME challenge request for {}", token);
             }
-
-            _logger.LogInformation("Completed ACME challenge request for {}", token);
+            else
+            {
+                _logger.LogInformation("Completed ACME challenge request for {}", token);
+            }
 
             context.Response.ContentLength = response!.Length;
             context.Response.ContentType = "application/octet-stream";
