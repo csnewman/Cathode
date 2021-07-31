@@ -31,9 +31,6 @@ table! {
 
 joinable!(node_connection_information -> nodes (node_id));
 
-allow_tables_to_appear_in_same_query!(
-    node_connection_information,
-    nodes,
-);
+allow_tables_to_appear_in_same_query!(node_connection_information, nodes,);
 
 // settings,

@@ -1,5 +1,6 @@
 ﻿FROM ubuntu
 WORKDIR /app
-EXPOSE 52
-COPY ["target/release/gateway-dns", "/app/"]
-ENTRYPOINT ["gateway-dns"]
+EXPOSE 53
+COPY target/release/gateway-dns /app/
+COPY config.toml /app/
+ENTRYPOINT ["./gateway-dns"]

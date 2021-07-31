@@ -1,21 +1,24 @@
-use log::{info};
-use trust_dns_server::authority::{AuthLookup, LookupError, LookupRecords, AnyRecords, Authority, ZoneType, MessageRequest, UpdateResult};
-use std::net::{Ipv4Addr};
-use trust_dns_server::client::rr::{RecordType, Name, LowerName, RecordSet};
-use trust_dns_server::proto::rr::dnssec::SupportedAlgorithms;
-use futures::{future, Future};
-use trust_dns_server::client::op::{ResponseCode, LowerQuery};
-use std::pin::Pin;
-use crate::PgPool;
-use std::borrow::Borrow;
-use lazy_static::lazy_static;
-use regex::Regex;
-use trust_dns_server::proto::rr::{RData, Record};
-use std::sync::Arc;
-use anyhow::Result;
-use trust_dns_server::proto::rr::rdata::{SOA, TXT};
-use uuid::Uuid;
 use crate::models::Node;
+use crate::PgPool;
+use anyhow::Result;
+use futures::{future, Future};
+use lazy_static::lazy_static;
+use log::info;
+use regex::Regex;
+use std::borrow::Borrow;
+use std::net::Ipv4Addr;
+use std::pin::Pin;
+use std::sync::Arc;
+use trust_dns_server::authority::{
+    AnyRecords, AuthLookup, Authority, LookupError, LookupRecords, MessageRequest, UpdateResult,
+    ZoneType,
+};
+use trust_dns_server::client::op::{LowerQuery, ResponseCode};
+use trust_dns_server::client::rr::{LowerName, Name, RecordSet, RecordType};
+use trust_dns_server::proto::rr::dnssec::SupportedAlgorithms;
+use trust_dns_server::proto::rr::rdata::{SOA, TXT};
+use trust_dns_server::proto::rr::{RData, Record};
+use uuid::Uuid;
 
 lazy_static! {
     static ref V4RE: Regex = Regex::new(r"^v4-(\d{1,3})_(\d{1,3})_(\d{1,3})_(\d{1,3})$").unwrap();
@@ -37,15 +40,22 @@ impl CathodeAuthority {
 
         if rtype == RecordType::SOA {
             let mut set = RecordSet::new(name, rtype, 0);
-            set.insert(Record::from_rdata(Name::from(&self.origin), 60, RData::SOA(SOA::new(
-                Name::from(&self.origin),
-                Name::from(&self.origin),
-                1,
-                86400,
-                7200,
-                3600000,
-                3600,
-            ))), 0);
+            set.insert(
+                Record::from_rdata(
+                    Name::from(&self.origin),
+                    60,
+                    RData::SOA(SOA::new(
+                        Name::from(&self.origin),
+                        Name::from(&self.origin),
+                        1,
+                        86400,
+                        7200,
+                        3600000,
+                        3600,
+                    )),
+                ),
+                0,
+            );
             return Ok(Some(Arc::new(set)));
         }
 
@@ -78,7 +88,10 @@ impl CathodeAuthority {
                 let mut set = RecordSet::new(&name, rtype, 0);
                 let mut content = Vec::new();
                 content.push(challenge.clone());
-                set.insert(Record::from_rdata(name.clone(), 60, RData::TXT(TXT::new(content))), 0);
+                set.insert(
+                    Record::from_rdata(name.clone(), 60, RData::TXT(TXT::new(content))),
+                    0,
+                );
                 return Ok(Some(Arc::new(set)));
             }
         } else if rtype == RecordType::A {
@@ -90,7 +103,10 @@ impl CathodeAuthority {
                 let d = caps.get(4).unwrap().as_str().parse::<u8>()?;
 
                 let mut set = RecordSet::new(name, rtype, 0);
-                set.insert(Record::from_rdata(name.clone(), 3600, RData::A(Ipv4Addr::new(a, b, c, d))), 0);
+                set.insert(
+                    Record::from_rdata(name.clone(), 3600, RData::A(Ipv4Addr::new(a, b, c, d))),
+                    0,
+                );
                 return Ok(Some(Arc::new(set)));
             }
         }
@@ -98,7 +114,13 @@ impl CathodeAuthority {
         Ok(None)
     }
 
-    fn handle_request(&self, name: &LowerName, rtype: RecordType, is_secure: bool, supported_algorithms: SupportedAlgorithms) -> Result<AuthLookup, LookupError> {
+    fn handle_request(
+        &self,
+        name: &LowerName,
+        rtype: RecordType,
+        is_secure: bool,
+        supported_algorithms: SupportedAlgorithms,
+    ) -> Result<AuthLookup, LookupError> {
         match rtype {
             RecordType::AXFR | RecordType::ANY => {
                 let result = AnyRecords::new(
@@ -110,15 +132,16 @@ impl CathodeAuthority {
                 );
                 Ok(LookupRecords::AnyRecords(result))
             }
-            _ => self.perform_lookup(name.borrow(), rtype)
-                .map_or(
-                    Err(LookupError::from(ResponseCode::NXDomain)),
-                    |rr_set| rr_set.map_or(
-                        Err(LookupError::from(ResponseCode::NXDomain)),
-                        |rr_set| Ok(LookupRecords::new(is_secure, supported_algorithms, rr_set)),
-                    ),
-                )
-        }.map(|answers| AuthLookup::answers(answers, None))
+            _ => self.perform_lookup(name.borrow(), rtype).map_or(
+                Err(LookupError::from(ResponseCode::NXDomain)),
+                |rr_set| {
+                    rr_set.map_or(Err(LookupError::from(ResponseCode::NXDomain)), |rr_set| {
+                        Ok(LookupRecords::new(is_secure, supported_algorithms, rr_set))
+                    })
+                },
+            ),
+        }
+        .map(|answers| AuthLookup::answers(answers, None))
     }
 }
 
@@ -142,22 +165,45 @@ impl Authority for CathodeAuthority {
         &self.origin
     }
 
-    fn lookup(&self, name: &LowerName, rtype: RecordType, is_secure: bool, supported_algorithms: SupportedAlgorithms) -> Pin<Box<dyn Future<Output=Result<Self::Lookup, LookupError>> + Send>> {
-        Box::pin(future::ready(self.handle_request(name, rtype, is_secure, supported_algorithms)))
+    fn lookup(
+        &self,
+        name: &LowerName,
+        rtype: RecordType,
+        is_secure: bool,
+        supported_algorithms: SupportedAlgorithms,
+    ) -> Pin<Box<dyn Future<Output = Result<Self::Lookup, LookupError>> + Send>> {
+        Box::pin(future::ready(self.handle_request(
+            name,
+            rtype,
+            is_secure,
+            supported_algorithms,
+        )))
     }
 
-    fn search(&self, query: &LowerQuery, is_secure: bool, supported_algorithms: SupportedAlgorithms) -> Pin<Box<dyn Future<Output=Result<Self::Lookup, LookupError>> + Send>> {
+    fn search(
+        &self,
+        query: &LowerQuery,
+        is_secure: bool,
+        supported_algorithms: SupportedAlgorithms,
+    ) -> Pin<Box<dyn Future<Output = Result<Self::Lookup, LookupError>> + Send>> {
         let lookup_name = query.name();
         let record_type: RecordType = query.query_type();
 
         match record_type {
-            RecordType::SOA => Box::pin(self.lookup(self.origin(), record_type, is_secure, supported_algorithms)),
+            RecordType::SOA => {
+                Box::pin(self.lookup(self.origin(), record_type, is_secure, supported_algorithms))
+            }
             RecordType::AXFR => Box::pin(future::err(LookupError::from(ResponseCode::Refused))),
             _ => Box::pin(self.lookup(lookup_name, record_type, is_secure, supported_algorithms)),
         }
     }
 
-    fn get_nsec_records(&self, _name: &LowerName, _is_secure: bool, _supported_algorithms: SupportedAlgorithms) -> Pin<Box<dyn Future<Output=Result<Self::Lookup, LookupError>> + Send>> {
+    fn get_nsec_records(
+        &self,
+        _name: &LowerName,
+        _is_secure: bool,
+        _supported_algorithms: SupportedAlgorithms,
+    ) -> Pin<Box<dyn Future<Output = Result<Self::Lookup, LookupError>> + Send>> {
         Box::pin(future::ok(AuthLookup::default()))
     }
 }

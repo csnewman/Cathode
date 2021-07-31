@@ -1,4 +1,4 @@
-use ::config::{ConfigError, File, Environment, FileFormat};
+use ::config::{ConfigError, Environment, File, FileFormat};
 
 #[derive(Debug, Deserialize)]
 pub struct Database {
