@@ -1,5 +1,5 @@
 [dns]
-base_hostname = "nodes.localhost"
+basehostname = "nodes.localhost"
 threads = 4
 port = 8053
 

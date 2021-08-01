@@ -7,6 +7,7 @@ pub struct Database {
 
 #[derive(Debug, Deserialize)]
 pub struct Dns {
+    #[serde(rename = "basehostname")]
     pub base_hostname: String,
     pub threads: u32,
     pub port: u16,
@@ -22,7 +23,7 @@ impl Config {
     pub fn new() -> Result<Self, ConfigError> {
         let mut s = ::config::Config::default();
         s.merge(File::new("config.toml", FileFormat::Toml))?;
-        s.merge(Environment::with_prefix("cathode"))?;
+        s.merge(Environment::with_prefix("cathode").separator("_"))?;
         s.try_into()
     }
 }
