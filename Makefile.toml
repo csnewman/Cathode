@@ -7,18 +7,18 @@ clear = true
 disabled = true
 
 [tasks.gateway-restore]
-cwd = "Cathode.Gateway"
+cwd = "server/Cathode.Gateway"
 command = "dotnet"
 args = ["restore"]
 
 [tasks.gateway-build]
-cwd = "Cathode.Gateway"
+cwd = "server/Cathode.Gateway"
 command = "dotnet"
 args = ["publish", "--configuration", "Release", "--no-restore"]
 dependencies = ["gateway-restore"]
 
 [tasks.gateway-dns-build]
-cwd = "gateway-dns"
+cwd = "server/gateway-dns"
 command = "cargo"
 args = ["build", "--release"]
 env = { "CARGO_TARGET_DIR" = "target" }
